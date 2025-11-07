@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 AuraPass - Pattern Authentication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0f18;
+            color: #e5e7eb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .page-card {
+            display: none;
+            background: #121826;
+            border: 1px solid #222b3f;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .page-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 1rem;
+            margin-bottom: 32px;
+            font-weight: 300;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #d1d5db;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0a0f18;
+            border: 1px solid #222b3f;
+            border-radius: 8px;
+            color: #e5e7eb;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input::placeholder {
+            color: #6b7280;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+            padding: 20px;
+            background: #0a0f18;
+            border-radius: 12px;
+            border: 1px solid #222b3f;
+        }
+
+        .grid-item {
+            position: relative;
+            aspect-ratio: 1;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .grid-item:hover {
+            transform: scale(1.05);
+            border-color: #3b82f6;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .grid-item .mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            animation: markAppear 0.2s ease-out;
+        }
+
+        @keyframes markAppear {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #222b3f;
+        }
+
+        .btn-secondary:hover {
+            background: #374151;
+            border-color: #3b82f6;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .link:hover {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .hint-display {
+            background: #0a0f18;
+            border: 1px solid #222b3f;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            min-height: 48px;
+            font-size: 0.875rem;
+            color: #9ca3af;
+            font-style: italic;
+            display: none;
+        }
+
+        .hint-display.visible {
+            display: block;
+        }
+
+        .instruction-text {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .welcome-message {
+            text-align: center;
+            font-size: 1.125rem;
+            color: #d1d5db;
+            margin: 24px 0 32px;
+            line-height: 1.6;
+        }
+
+        .code-input {
+            width: 100%;
+            padding: 16px;
+            background: #0a0f18;
+            border: 1px solid #222b3f;
+            border-radius: 8px;
+            color: #e5e7eb;
+            font-size: 1.5rem;
+            font-family: 'Inter', monospace;
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .pattern-instruction {
+            text-align: center;
+            color: #60a5fa;
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+            font-weight: 500;
+            padding: 8px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        @media (max-width: 640px) {
+            .page-card {
+                padding: 32px 24px;
+            }
+
+            .app-title {
+                font-size: 2rem;
+            }
+
+            .image-grid {
+                gap: 8px;
+                padding: 16px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="home-page" class="page-card active">
+        <h1 class="app-title">🔐 AuraPass</h1>
+        <p class="tagline">Login with a pattern, not a password.</p>
+        <div class="button-group">
+            <button class="btn btn-secondary btn-full" onclick="showPage('login-page')">Login</button>
+            <button class="btn btn-primary btn-full" onclick="showPage('signup-page')">Sign Up</button>
+        </div>
+    </div>
+
+    <div id="signup-page" class="page-card">
+        <h2 class="card-title">Create Your Account</h2>
+        <form id="signup-form" action="/pattern" method="POST">
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="hint" placeholder="Create a password hint (optional)">
+            </div>
+
+            <div class="pattern-instruction" id="signup-instruction">
+                Select your pattern by clicking the images below
+            </div>
+
+            <div class="image-grid" id="signup-grid">
+                <div class="grid-item" data-index="0">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+1" alt="Icon 1">
+                </div>
+                <div class="grid-item" data-index="1">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+2" alt="Icon 2">
+                </div>
+                <div class="grid-item" data-index="2">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+3" alt="Icon 3">
+                </div>
+                <div class="grid-item" data-index="3">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+4" alt="Icon 4">
+                </div>
+                <div class="grid-item" data-index="4">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+5" alt="Icon 5">
+                </div>
+                <div class="grid-item" data-index="5">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+6" alt="Icon 6">
+                </div>
+                <div class="grid-item" data-index="6">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+7" alt="Icon 7">
+                </div>
+                <div class="grid-item" data-index="7">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+8" alt="Icon 8">
+                </div>
+                <div class="grid-item" data-index="8">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+9" alt="Icon 9">
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button type="button" class="btn btn-secondary" onclick="undoLast('signup')">Undo Last</button>
+                <button type="button" class="btn btn-secondary" onclick="clearPattern('signup')">Clear</button>
+            </div>
+
+            <input type="hidden" id="sequence" name="sequence">
+            <input type="hidden" name="mode" value="signup">
+
+            <button type="button" class="btn btn-primary btn-full" onclick="handleSignupSubmit()">Set Pattern</button>
+
+            <p class="text-center">
+                <a class="link" onclick="showPage('login-page')">Already have an account? Login</a>
+            </p>
+        </form>
+    </div>
+
+    <div id="login-page" class="page-card">
+        <h2 class="card-title">Welcome Back</h2>
+        <form id="login-form" action="/pattern" method="POST">
+            <div class="form-group">
+                <input type="text" name="username" id="login-username" placeholder="Enter your username" required>
+            </div>
+
+            <div class="hint-display" id="hint-display"></div>
+
+            <div class="pattern-instruction">
+                Enter your pattern by clicking the images below
+            </div>
+
+            <div class="image-grid" id="login-grid">
+                <div class="grid-item" data-index="0">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+1" alt="Icon 1">
+                </div>
+                <div class="grid-item" data-index="1">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+2" alt="Icon 2">
+                </div>
+                <div class="grid-item" data-index="2">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+3" alt="Icon 3">
+                </div>
+                <div class="grid-item" data-index="3">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+4" alt="Icon 4">
+                </div>
+                <div class="grid-item" data-index="4">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+5" alt="Icon 5">
+                </div>
+                <div class="grid-item" data-index="5">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+6" alt="Icon 6">
+                </div>
+                <div class="grid-item" data-index="6">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+7" alt="Icon 7">
+                </div>
+                <div class="grid-item" data-index="7">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+8" alt="Icon 8">
+                </div>
+                <div class="grid-item" data-index="8">
+                    <img src="https://placehold.co/150x150/121826/e5e7eb?text=Icon+9" alt="Icon 9">
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button type="button" class="btn btn-secondary" onclick="undoLast('login')">Undo Last</button>
+                <button type="button" class="btn btn-secondary" onclick="clearPattern('login')">Clear</button>
+            </div>
+
+            <p class="text-center" style="margin-bottom: 16px;">
+                <a class="link" onclick="alert('Contact support to reset your pattern')">Forgot Password?</a>
+            </p>
+
+            <input type="hidden" id="sequence" name="sequence">
+            <input type="hidden" name="mode" value="login">
+
+            <button type="submit" class="btn btn-primary btn-full" onclick="handleLoginSubmit(event)">Login</button>
+
+            <button type="button" id="kill-switch" class="btn btn-danger btn-full hidden" onclick="handleKillSwitch()">Kill Switch</button>
+
+            <p class="text-center">
+                <a class="link" onclick="showPage('signup-page')">Need an account? Sign Up</a>
+            </p>
+        </form>
+    </div>
+
+    <div id="twofa-page" class="page-card">
+        <h2 class="card-title">Two-Factor Authentication</h2>
+        <p class="instruction-text">Enter the 6-digit code from your authenticator app to complete the login process.</p>
+        <form action="/verify_2fa" method="POST">
+            <div class="form-group">
+                <input type="text" class="code-input" name="code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Verify Code</button>
+            <p class="text-center">
+                <a class="link" onclick="showPage('login-page')">Cancel</a>
+            </p>
+        </form>
+    </div>
+
+    <div id="dashboard-page" class="page-card">
+        <h2 class="card-title">Welcome, <span id="username-display">User</span></h2>
+        <p class="welcome-message">You are securely logged in. Your pattern authentication was successful.</p>
+        <button class="btn btn-primary btn-full" onclick="handleLogout()">Logout</button>
+    </div>
+
+    <script>
+        const sequences = {
+            signup: [],
+            login: []
+        };
+
+        let signupFirstPattern = null;
+        let isConfirmingPattern = false;
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+
+            if (pageId === 'signup-page') {
+                clearPattern('signup');
+                signupFirstPattern = null;
+                isConfirmingPattern = false;
+                document.getElementById('signup-instruction').textContent = 'Select your pattern by clicking the images below';
+            } else if (pageId === 'login-page') {
+                clearPattern('login');
+            }
+        }
+
+        function initGridListeners() {
+            document.querySelectorAll('#signup-grid .grid-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    handleGridClick(this, 'signup');
+                });
+            });
+
+            document.querySelectorAll('#login-grid .grid-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    handleGridClick(this, 'login');
+                });
+            });
+        }
+
+        function handleGridClick(element, mode) {
+            const index = parseInt(element.dataset.index);
+
+            if (sequences[mode].includes(index)) {
+                return;
+            }
+
+            sequences[mode].push(index);
+
+            const mark = document.createElement('div');
+            mark.className = 'mark';
+            mark.textContent = sequences[mode].length;
+            element.appendChild(mark);
+        }
+
+        function undoLast(mode) {
+            if (sequences[mode].length === 0) return;
+
+            sequences[mode].pop();
+
+            const grid = document.getElementById(mode + '-grid');
+            const marks = grid.querySelectorAll('.mark');
+            if (marks.length > 0) {
+                marks[marks.length - 1].remove();
+            }
+        }
+
+        function clearPattern(mode) {
+            sequences[mode] = [];
+
+            const grid = document.getElementById(mode + '-grid');
+            grid.querySelectorAll('.mark').forEach(mark => mark.remove());
+        }
+
+        function handleSignupSubmit() {
+            if (sequences.signup.length < 4) {
+                alert('Please select at least 4 images for your pattern');
+                return;
+            }
+
+            if (!isConfirmingPattern) {
+                signupFirstPattern = sequences.signup.slice();
+                isConfirmingPattern = true;
+                clearPattern('signup');
+                document.getElementById('signup-instruction').textContent = 'Repeat your pattern to confirm';
+                return;
+            }
+
+            if (sequences.signup.length !== signupFirstPattern.length) {
+                alert('Pattern length does not match. Please try again.');
+                clearPattern('signup');
+                signupFirstPattern = null;
+                isConfirmingPattern = false;
+                document.getElementById('signup-instruction').textContent = 'Select your pattern by clicking the images below';
+                return;
+            }
+
+            for (let i = 0; i < sequences.signup.length; i++) {
+                if (sequences.signup[i] !== signupFirstPattern[i]) {
+                    alert('Patterns do not match. Please try again.');
+                    clearPattern('signup');
+                    signupFirstPattern = null;
+                    isConfirmingPattern = false;
+                    document.getElementById('signup-instruction').textContent = 'Select your pattern by clicking the images below';
+                    return;
+                }
+            }
+
+            document.getElementById('sequence').value = sequences.signup.join('-');
+            document.getElementById('signup-form').submit();
+        }
+
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+
+            if (sequences.login.length === 0) {
+                alert('Please enter your pattern');
+                return;
+            }
+
+            document.querySelector('#login-form #sequence').value = sequences.login.join('-');
+            document.getElementById('login-form').submit();
+        }
+
+        function handleKillSwitch() {
+            if (confirm('Are you sure you want to activate the kill switch? This will delete all your data.')) {
+                alert('Kill switch activated. All data has been securely deleted.');
+                showPage('home-page');
+            }
+        }
+
+        function handleLogout() {
+            alert('You have been logged out successfully.');
+            showPage('home-page');
+        }
+
+        initGridListeners();
+    </script>
+</body>
+</html>
